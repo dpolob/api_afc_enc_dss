@@ -1,0 +1,549 @@
+{
+  "openapi" : "3.0.0",
+  "info" : {
+    "title" : "WaterNeeds DSS Algorithms",
+    "description" : "AFarCloud. T3 API for DSS algorithm\n\nAlgorithm to predict water needs in a crop based on soil parameters and soil snseor\n\n\nTBC\n",
+    "contact" : {
+      "name" : "Diego Polo (ENCORE LAB)",
+      "email" : "diego@encore-lab.com"
+    },
+    "license" : {
+      "name" : "Apache 2.0",
+      "url" : "http://www.apache.org/licenses/LICENSE-2.0.html"
+    },
+    "version" : "2.0.0-oas3"
+  },
+  "servers" : [ {
+    "url" : "http://ec2-35-181-5-77.eu-west-3.compute.amazonaws.com:5104"
+  }, {
+    "url" : "http://ec2-35-181-5-77.eu-west-3.compute.amazonaws.com:5105"
+  }, {
+    "url" : "http://ec2-35-181-5-77.eu-west-3.compute.amazonaws.com:5101"
+  } ],
+  "tags" : [ {
+    "name" : "users",
+    "description" : "Operations available to user who can use to control algorithms"
+  }, {
+    "name" : "entry point",
+    "description" : "Operations that all algorithms must implement, according to DSS Framework implementatio. Theses call will be made by DSS Framework to the algorithms and algorithm must reply with responses according to these especifications."
+  } ],
+  "paths" : {
+    "/status" : {
+      "get" : {
+        "tags" : [ "users" ],
+        "summary" : "Return status of algorithm",
+        "description" : "Replies with status of the algorithm.\n",
+        "operationId" : "status_get",
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/waterneeds.config.schema"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "userAuth" : [ ]
+        } ]
+      }
+    },
+    "/thresholds" : {
+      "get" : {
+        "tags" : [ "users" ],
+        "summary" : "Return humidity thresholds of algorithm\n",
+        "description" : "Replies with current values of thresholds.\n",
+        "operationId" : "thresholdsGet",
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/water.config"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "userAuth" : [ ]
+        } ]
+      },
+      "post" : {
+        "tags" : [ "users" ],
+        "summary" : "Modify water neeeds thresholds of algorithm\n",
+        "description" : "JSON is send in the body it changes thresholds for watering\n",
+        "operationId" : "thresholdsPost",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/water.config"
+              }
+            }
+          },
+          "required" : false
+        },
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/inline_response_200"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Bad Request",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/inline_response_400"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "userAuth" : [ ]
+        } ]
+      }
+    },
+    "/soil" : {
+      "get" : {
+        "tags" : [ "users" ],
+        "summary" : "Return  the soil structure.\n",
+        "description" : "Return  soil structure according to Saxton parameters.\n",
+        "operationId" : "soilGet",
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/soil.config"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post" : {
+        "tags" : [ "users" ],
+        "summary" : "Return or modify the soil structure.\n",
+        "description" : "Modify soil structure according to Saxton parameters.\n",
+        "operationId" : "soilPost",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/soil.config"
+              }
+            }
+          },
+          "required" : false
+        },
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/inline_response_200_1"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Bad Request",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/inline_response_400"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "userAuth" : [ ]
+        } ]
+      }
+    },
+    "/water" : {
+      "get" : {
+        "tags" : [ "users" ],
+        "summary" : "Query for water estimation\n",
+        "description" : "Method to query algorithm with prediction of mm of water to reach maximun threshold.\n\"updated NO\" will indicate that the value taken from database is more than 4 hours old than the time user requests the result. If it is updated the key will not be present in the reponse\n",
+        "operationId" : "water",
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/waterneed.response"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Internal Server Error",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/inline_response_500"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/stop_alg" : {
+      "get" : {
+        "tags" : [ "entry point" ],
+        "summary" : "Stop algotithm, only used by DSS Framework\n",
+        "description" : "Commands an algorithm to stop.\n",
+        "operationId" : "stop_alg",
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/inline_response_200_2"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/run_alg" : {
+      "post" : {
+        "tags" : [ "entry point" ],
+        "summary" : "Run an algorithm. Only used by DSS Framework\n",
+        "description" : "Commands an algorithm to start. Configuration JSON will be sent to the algorithm if user sent using /start\n",
+        "operationId" : "run_alg",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/body"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/inline_response_200_3"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "ERROR",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/inline_response_400_1"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/status_alg" : {
+      "get" : {
+        "tags" : [ "entry point" ],
+        "summary" : "Status of an algorithm\n",
+        "description" : "Get the status of an algorithm.\n",
+        "operationId" : "status_alg",
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/inline_response_200_4"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components" : {
+    "schemas" : {
+      "waterneeds.config.schema" : {
+        "type" : "object",
+        "properties" : {
+          "water" : {
+            "$ref" : "#/components/schemas/water.config"
+          },
+          "soil" : {
+            "$ref" : "#/components/schemas/soil.config"
+          },
+          "afc_db" : {
+            "$ref" : "#/components/schemas/afc.database"
+          }
+        }
+      },
+      "water.config" : {
+        "type" : "object",
+        "properties" : {
+          "min" : {
+            "maximum" : 100,
+            "minimum" : 0,
+            "type" : "integer",
+            "description" : "percentage of max water allowed for crop"
+          },
+          "max" : {
+            "maximum" : 100,
+            "minimum" : 0,
+            "type" : "integer",
+            "description" : "percentage of max water allowed for crop"
+          }
+        },
+        "description" : "Crop water thresholds",
+        "example" : {
+          "min" : 12,
+          "max" : 25
+        }
+      },
+      "soil.config" : {
+        "type" : "object",
+        "properties" : {
+          "sand" : {
+            "maximum" : 100,
+            "minimum" : 0,
+            "type" : "integer",
+            "description" : "percentage of sand content of the soil"
+          },
+          "clay" : {
+            "maximum" : 100,
+            "minimum" : 0,
+            "type" : "integer",
+            "description" : "percentage of clay content of the soil"
+          },
+          "lime" : {
+            "maximum" : 100,
+            "minimum" : 0,
+            "type" : "integer",
+            "description" : "percentage of organic matter of the soil"
+          },
+          "gross" : {
+            "maximum" : 100,
+            "minimum" : 0,
+            "type" : "integer",
+            "description" : "percentage of gross materials in the soil"
+          }
+        },
+        "description" : "Soil configuration",
+        "example" : {
+          "sand" : 45,
+          "clay" : 20,
+          "lime" : 35,
+          "gross" : 60
+        }
+      },
+      "afc.database" : {
+        "type" : "object",
+        "properties" : {
+          "url" : {
+            "type" : "string",
+            "description" : "URL of the API of DataManager to get the access"
+          },
+          "entityNames" : {
+            "type" : "string",
+            "description" : "Name of the sensor"
+          },
+          "measurement" : {
+            "type" : "string",
+            "description" : "Measure to retrieve from sensor"
+          }
+        },
+        "description" : "data for database to retrieve data. DO NOT MODIFY if not sure what you are doing",
+        "example" : {
+          "url" : "http://torcos.etsist.upm.es:9216/getObservationsBySensor/latest/",
+          "entityNames" : "afc_cesens_soil",
+          "measurement" : "soil_humidity"
+        }
+      },
+      "waterneed.response" : {
+        "type" : "object",
+        "properties" : {
+          "result" : {
+            "type" : "number"
+          },
+          "timestamp" : {
+            "type" : "integer"
+          },
+          "updated" : {
+            "type" : "string"
+          }
+        },
+        "description" : "response of algorithm",
+        "example" : {
+          "result" : 139.5455,
+          "timestamp" : 1589511525,
+          "updated" : "NO"
+        }
+      },
+      "inline_response_200" : {
+        "type" : "object",
+        "properties" : {
+          "OK" : {
+            "type" : "string"
+          }
+        },
+        "example" : {
+          "OK" : "parameters updated"
+        }
+      },
+      "inline_response_400" : {
+        "type" : "object",
+        "properties" : {
+          "ERROR" : {
+            "type" : "string"
+          }
+        },
+        "example" : {
+          "ERROR" : "bad parameters"
+        }
+      },
+      "inline_response_200_1" : {
+        "type" : "object",
+        "properties" : {
+          "OK" : {
+            "type" : "string"
+          }
+        },
+        "example" : {
+          "OK" : "soil parameters updated"
+        }
+      },
+      "inline_response_500" : {
+        "type" : "object",
+        "properties" : {
+          "ERROR" : {
+            "type" : "string"
+          }
+        },
+        "example" : {
+          "ERROR" : "error generated"
+        }
+      },
+      "inline_response_200_2" : {
+        "type" : "object",
+        "properties" : {
+          "status" : {
+            "type" : "string",
+            "enum" : [ "STOPPED", "ERROR" ]
+          },
+          "msg" : {
+            "type" : "object"
+          }
+        },
+        "example" : {
+          "status" : "STOPPED",
+          "msg" : {
+            "OK" : "Algorithm stopped"
+          }
+        }
+      },
+      "body" : {
+        "type" : "object",
+        "properties" : {
+          "config" : {
+            "$ref" : "#/components/schemas/waterneeds.config.schema"
+          },
+          "request_id" : {
+            "type" : "integer",
+            "description" : "Request_id provided by MMT or DSS"
+          },
+          "dss_api_endpoint" : {
+            "type" : "string",
+            "description" : "Endpoint to send results"
+          }
+        }
+      },
+      "inline_response_200_3" : {
+        "type" : "object",
+        "properties" : {
+          "status" : {
+            "type" : "string",
+            "enum" : [ "STARTED", "ERROR" ]
+          },
+          "msg" : {
+            "type" : "object"
+          }
+        },
+        "example" : {
+          "status" : "STARTED",
+          "msg" : {
+            "OK" : "Algorithm started"
+          }
+        }
+      },
+      "inline_response_400_1" : {
+        "type" : "object",
+        "properties" : {
+          "status" : {
+            "type" : "string",
+            "enum" : [ "ERROR" ]
+          },
+          "msg" : {
+            "type" : "object"
+          }
+        },
+        "example" : {
+          "status" : "OK",
+          "msg" : {
+            "OK" : "Crontab error"
+          }
+        }
+      },
+      "inline_response_200_4" : {
+        "type" : "object",
+        "properties" : {
+          "status" : {
+            "type" : "string",
+            "enum" : [ "STOPPED", "STARTED", "ERROR" ]
+          },
+          "msg" : {
+            "$ref" : "#/components/schemas/waterneeds.config.schema"
+          }
+        }
+      }
+    },
+    "securitySchemes" : {
+      "adminAuth" : {
+        "type" : "http",
+        "scheme" : "basic"
+      },
+      "userAuth" : {
+        "type" : "http",
+        "scheme" : "basic"
+      },
+      "entrypointAuth" : {
+        "type" : "http",
+        "scheme" : "basic"
+      }
+    }
+  }
+}
